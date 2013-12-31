@@ -219,4 +219,28 @@ suite('Axel', function(){
             chai.assert.deepEqual(loaded_file, ['file.js']);
         });
     });
+
+    suite('.ready()', function(){
+        var load_promises = {};
+        var head_js_ready = null;
+
+        setup(function(){
+            head_js_ready = window['head'].ready;
+            window['head'].ready = function(path, callback){
+                load_promises[path] = callback;
+            }
+        });
+
+        teardown(function(){
+            window['head'].ready = head_js_ready;
+        });
+
+        test('should register promise', function(){
+            var noop = function(){};
+            axel.ready('egg', noop);
+            axel.register('egg', 'file.js');
+            axel.load('egg');
+            chai.assert.deepEqual(load_promises, {'file.js': noop});
+        })
+    })
 });

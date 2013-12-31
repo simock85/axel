@@ -11,6 +11,7 @@
     var registrations          = {},
         registrations_by_path  = {},
         aliases                = {},
+        load_promises          = {},
         api                    = win['axel'] = (win['axel'] || {} );
 
     api.Preloaded = {'axel-skip-load': true};
@@ -87,7 +88,7 @@
                 return path;
         }
         return null;
-    }
+    };
 
     api.load = function(name, callback) {
         if (typeof callback === 'undefined')
@@ -117,6 +118,13 @@
                 entry[original_path] = original_path;
                 paths.push(entry);
             }
+
+            var promises = load_promises[name];
+            if (promises != null){
+                for (var j=0; j<promises.length; ++j){
+                    api.ready(name, promises[j]);
+                }
+            }
         }
 
         var headVar = win.head_conf && win.head_conf.head || "head";
@@ -126,13 +134,13 @@
         headjs.load.apply(null, load_args);
 
         return api;
-    }
+    };
 
     api.clear = function() {
         registrations = {};
         registrations_by_path = {};
         aliases = {};
-    }
+    };
 
     api.ready = function(name, callback) {
         var headVar = win.head_conf && win.head_conf.head || "head";
@@ -144,12 +152,14 @@
         }
 
         var original_path = api.path(name);
-        if (original_path === api.Preloaded)
+        if (original_path === null)
+            load_promises[name] = load_promises[name] != null ? load_promises[name].concat(callback) : [callback];
+        else if (original_path === api.Preloaded)
             callback();
         else
             headjs.ready(original_path, callback);
         return api;
-    }
+    };
 
     // Fast isFunction implementation from Underscore.js.
     function isFunction(object) {
