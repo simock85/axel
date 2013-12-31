@@ -140,6 +140,7 @@
         registrations = {};
         registrations_by_path = {};
         aliases = {};
+        load_promises = {};
     };
 
     api.ready = function(name, callback) {
