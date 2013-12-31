@@ -221,26 +221,72 @@ suite('Axel', function(){
     });
 
     suite('.ready()', function(){
-        var load_promises = {};
+        var ready_calls = {};
         var head_js_ready = null;
 
         setup(function(){
             head_js_ready = window['head'].ready;
             window['head'].ready = function(path, callback){
-                load_promises[path] = callback;
+                ready_calls[path] = callback;
             }
         });
 
         teardown(function(){
+            axel.clear();
+            ready_calls = {};
             window['head'].ready = head_js_ready;
         });
 
-        test('should register promise', function(){
+        test('should register callback', function(){
+            var noop = function(){};
+            axel.register('egg', 'file.js');
+            axel.ready('egg', noop);
+            axel.load('egg');
+            chai.assert.deepEqual(ready_calls, {'file.js': noop});
+        });
+
+        test('should register callback also if alias is loaded', function(){
+            var noop = function(){};
+            axel.register('egg', 'file.js');
+            axel.alias('ham', 'egg');
+            axel.ready('ham', noop);
+            axel.load('ham');
+            chai.assert.deepEqual(ready_calls, {'file.js': noop});
+        });
+
+        test('should collapse callbacks', function(){
+            var noop = function(){};
+            axel.register('egg', 'file.js');
+            axel.alias('ham', 'egg');
+            axel.ready('ham', noop);
+            axel.load(['ham', 'egg']);
+            chai.assert.deepEqual(ready_calls, {'file.js': noop});
+        });
+
+        test('should register callback from promise', function(){
             var noop = function(){};
             axel.ready('egg', noop);
             axel.register('egg', 'file.js');
             axel.load('egg');
-            chai.assert.deepEqual(load_promises, {'file.js': noop});
-        })
+            chai.assert.deepEqual(ready_calls, {'file.js': noop});
+        });
+
+        test('should register callback from promise also if alias is loaded', function(){
+            var noop = function(){};
+            axel.ready('ham', noop);
+            axel.register('egg', 'file.js');
+            axel.alias('ham', 'egg');
+            axel.load('ham');
+            chai.assert.deepEqual(ready_calls, {'file.js': noop});
+        });
+
+        test('should collapse promises', function(){
+            var noop = function(){};
+            axel.ready('ham', noop);
+            axel.register('egg', 'file.js');
+            axel.alias('ham', 'egg');
+            axel.load(['ham', 'egg']);
+            chai.assert.deepEqual(ready_calls, {'file.js': noop});
+        });
     })
 });

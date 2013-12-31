@@ -119,10 +119,10 @@
                 paths.push(entry);
             }
 
-            var promises = load_promises[name];
+            var promises = load_promises[original_name] || load_promises[name[i]];
             if (promises != null){
                 for (var j=0; j<promises.length; ++j){
-                    api.ready(name, promises[j]);
+                    api.ready(original_name, promises[j]);
                 }
             }
         }
