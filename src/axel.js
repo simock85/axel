@@ -95,6 +95,7 @@
             callback = null;
 
         var paths = [];
+        var paths_objs = [];
 
         if(!(name instanceof Array))
             name = [name];
@@ -114,9 +115,11 @@
                 continue;
 
             if (paths.indexOf(original_path) == -1) {
-                var entry = {};
-                entry[original_path] = original_path;
-                paths.push(entry);
+                paths.push(original_path);
+
+                var path_obj = {};
+                path_obj[original_path] = original_path;
+                paths_objs.push(path_obj);
             }
 
             var promises = load_promises[original_name] || load_promises[name[i]];
@@ -129,8 +132,7 @@
 
         var headVar = win.head_conf && win.head_conf.head || "head";
         var headjs  = win[headVar];
-
-        var load_args = paths.concat(callback);
+        var load_args = paths_objs.concat(callback);
         headjs.load.apply(null, load_args);
 
         return api;
